@@ -1,0 +1,14 @@
+[
+  { "termo": "inteligência artificial", "peso": 1.0 },
+  { "termo": "IA", "peso": 1.0 },
+  { "termo": "chatbot", "peso": 1.0 },
+  { "termo": "agente virtual", "peso": 1.0 },
+  { "termo": "atendimento automatizado", "peso": 0.9 },
+  { "termo": "URA", "peso": 0.8 },
+  { "termo": "automação", "peso": 0.8 },
+  { "termo": "RPA", "peso": 0.8 },
+  { "termo": "software", "peso": 0.6 },
+  { "termo": "sistema web", "peso": 0.6 },
+  { "termo": "aplicativo", "peso": 0.6 },
+  { "termo": "desenvolvimento de software", "peso": 0.7 }
+]

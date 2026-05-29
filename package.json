@@ -1,0 +1,29 @@
+{
+  "name": "licitacoes-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pipeline que monitora o PNCP por palavras-chave, filtra por heurísticas e classifica oportunidades de licitação com IA (Gemini) para o perfil da sua empresa.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maateusx/licitacao-ai.git"
+  },
+  "license": "Unlicense",
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @licitacoes/api --filter @licitacoes/web dev",
+    "dev:api": "pnpm --filter @licitacoes/api dev",
+    "dev:web": "pnpm --filter @licitacoes/web dev",
+    "build": "pnpm --filter @licitacoes/web build",
+    "typecheck": "pnpm -r typecheck",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f db",
+    "db:schema": "pnpm --filter @licitacoes/api db:schema",
+    "db:seed": "pnpm --filter @licitacoes/api db:seed",
+    "smoke": "pnpm --filter @licitacoes/api smoke",
+    "classify:test": "pnpm --filter @licitacoes/api classify:test"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}

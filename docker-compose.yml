@@ -1,0 +1,22 @@
+# Banco local. Spec menciona "Supabase local", mas para o MVP só precisamos
+# do Postgres (a API é Fastify, não usamos Auth/Realtime/Storage). Se algum
+# Sprint futuro pedir esses serviços, trocar pela imagem supabase/postgres
+# ou pelo stack completo via CLI do Supabase.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: licitacoes-db
+    restart: unless-stopped
+    ports:
+      - "54322:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./supabase-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 20

@@ -1,0 +1,14 @@
+{
+  "blacklist_uf": [],
+  "blacklist_orgaos": [],
+  "blacklist_objeto_regex": [
+    "\\b(impress(ão|ao)|tonner|toner|cartucho)\\b",
+    "\\b(caf[ée]|coffee\\s*break|g[êe]neros\\s+aliment[íi]cios)\\b",
+    "\\blimpeza\\s+(predial|hospitalar|urbana)\\b",
+    "\\bvigil[âa]ncia\\s+(armada|patrimonial)\\b",
+    "\\b(loca[çc][ãa]o\\s+de\\s+ve[íi]culos|combust[íi]vel|gasolina|diesel)\\b",
+    "\\b(obra|reforma|constru[çc][ãa]o\\s+civil|pavimenta[çc][ãa]o)\\b",
+    "\\b(g[êe]neros\\s+aliment[íi]cios|merenda\\s+escolar)\\b",
+    "\\b(material\\s+de\\s+expediente|material\\s+de\\s+escrit[óo]rio)\\b"
+  ]
+}

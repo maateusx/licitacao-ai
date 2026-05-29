@@ -1,0 +1,31 @@
+{
+  "name": "@licitacoes/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "db:schema": "tsx src/scripts/apply-schema.ts",
+    "db:seed": "tsx src/scripts/seed-keywords.ts",
+    "smoke": "tsx src/scripts/smoke-test.ts",
+    "classify:test": "tsx src/scripts/classify-test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.1.0",
+    "node-cron": "^4.2.1",
+    "pino": "^9.5.0",
+    "pino-pretty": "^11.3.0",
+    "postgres": "^3.4.5",
+    "undici": "^6.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.4"
+  }
+}
