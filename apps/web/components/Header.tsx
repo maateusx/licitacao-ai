@@ -76,8 +76,8 @@ function ViewTabs() {
   const suffix = qs ? `?${qs}` : '';
 
   const tabs = [
-    { href: `/${suffix}`, label: 'Timeline', match: '/' },
-    { href: `/tabela${suffix}`, label: 'Tabela', match: '/tabela' },
+    { href: `/${suffix}`, label: 'Tabela', match: '/' },
+    { href: `/timeline${suffix}`, label: 'Timeline', match: '/timeline' },
   ];
 
   return (

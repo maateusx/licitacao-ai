@@ -3,20 +3,21 @@
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
-import { Header } from '@/components/Header';
 import { FilterSidebar } from '@/components/FilterSidebar';
+import { Header } from '@/components/Header';
 import { LicitacaoDrawer } from '@/components/LicitacaoDrawer';
-import { Timeline } from '@/components/Timeline';
+import { LicitacoesTable } from '@/components/LicitacoesTable';
+import { Pagination } from '@/components/Pagination';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api-client';
-import { toApiQuery } from '@/lib/filters';
+import { toApiQuery, type OrderBy, type SortDirection } from '@/lib/filters';
 import { useFilters } from '@/lib/use-filters';
 
-export default function Page() {
-  const { filters, reset } = useFilters();
+export default function TabelaPage() {
+  const { filters, setFilters, reset } = useFilters();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const qs = toApiQuery(filters, 100);
+  const qs = toApiQuery(filters);
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['licitacoes', qs.toString()],
     queryFn: () => api.listLicitacoes(qs),
@@ -24,6 +25,10 @@ export default function Page() {
 
   const total = data?.pagination.total ?? 0;
   const hasResults = (data?.data.length ?? 0) > 0;
+
+  const handleSort = (order: OrderBy, direction: SortDirection) => {
+    setFilters({ order, direction, page: null });
+  };
 
   return (
     <div className="flex h-screen flex-col">
@@ -57,8 +62,26 @@ export default function Page() {
             {!isLoading && !error && !hasResults && (
               <EmptyView onReset={reset} hasFilters={hasActiveFilters(filters)} />
             )}
-            {data && hasResults && <Timeline data={data.data} onSelect={setSelectedId} />}
+            {data && hasResults && (
+              <LicitacoesTable
+                data={data.data}
+                order={filters.order}
+                direction={filters.direction}
+                selectedId={selectedId}
+                onSort={handleSort}
+                onSelect={setSelectedId}
+              />
+            )}
           </div>
+          {data && (
+            <Pagination
+              page={filters.page}
+              pageSize={filters.page_size}
+              total={total}
+              onPageChange={(p) => setFilters({ page: p === 1 ? null : p })}
+              onPageSizeChange={(ps) => setFilters({ page_size: ps, page: null })}
+            />
+          )}
         </main>
       </div>
       <LicitacaoDrawer id={selectedId} onClose={() => setSelectedId(null)} />

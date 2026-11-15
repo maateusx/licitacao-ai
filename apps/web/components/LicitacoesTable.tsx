@@ -6,7 +6,7 @@ import { Archive, ArrowDown, ArrowUp, ArrowUpDown, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DEFAULT_DIRECTION, type OrderBy, type SortDirection } from '@/lib/filters';
 import { NOME_FONTE, type Categoria, type Licitacao } from '@/lib/types';
-import { cn, formatBRL, truncate } from '@/lib/utils';
+import { cn, formatBRL, resumoObjeto, truncate } from '@/lib/utils';
 
 interface Column {
   key: OrderBy | null;
@@ -18,7 +18,7 @@ interface Column {
 const COLUMNS: Column[] = [
   { key: 'data_encerramento', label: 'Encerra' },
   { key: 'score', label: 'IA', align: 'center' },
-  { key: 'titulo', label: 'Título' },
+  { key: null, label: 'Objeto' },
   { key: 'orgao', label: 'Órgão' },
   { key: 'uf', label: 'UF', align: 'center' },
   { key: null, label: 'Modalidade' },
@@ -165,14 +165,16 @@ function Row({
         )}
       </td>
       <td className="max-w-[420px] border-b border-slate-100 px-3 py-2 align-top">
-        <div className="flex items-center gap-1.5 font-medium text-slate-900">
+        <div className="flex items-start gap-1.5 font-medium text-slate-900">
           {licitacao.favorita && (
             <Star className="h-3 w-3 shrink-0 fill-amber-500 text-amber-500" />
           )}
           {licitacao.arquivada && (
             <Archive className="h-3 w-3 shrink-0 text-slate-400" />
           )}
-          <span className="truncate">{truncate(licitacao.titulo, 110) || '(sem título)'}</span>
+          <span className="line-clamp-2" title={licitacao.objeto ?? undefined}>
+            {resumoObjeto(licitacao.objeto, licitacao.titulo) || '(sem objeto)'}
+          </span>
         </div>
         {licitacao.municipio && (
           <div className="mt-0.5 text-[11px] text-slate-500">{licitacao.municipio}</div>
