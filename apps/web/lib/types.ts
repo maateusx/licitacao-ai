@@ -12,6 +12,7 @@ export interface Analise {
 
 export interface Licitacao {
   id: string;
+  fonte: string;
   id_pncp: string;
   titulo: string | null;
   objeto: string | null;
@@ -116,3 +117,11 @@ export interface ReanalisarResponse {
   };
   erro?: string;
 }
+
+export const NOME_FONTE: Record<string, string> = {
+  pncp: 'PNCP',
+  querido_diario: 'Querido Diário',
+  petronect: 'Petronect',
+  paradigma: 'Portal Paradigma (Sistema S)',
+  gobuyer: 'GoBuyer (CNI/SESI/SENAI)',
+};

@@ -10,6 +10,7 @@
     "db:seed": "tsx src/scripts/seed-keywords.ts",
     "smoke": "tsx src/scripts/smoke-test.ts",
     "classify:test": "tsx src/scripts/classify-test.ts",
+    "fonte:test": "tsx src/scripts/fonte-test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

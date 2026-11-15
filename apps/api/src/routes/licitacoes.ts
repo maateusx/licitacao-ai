@@ -87,6 +87,7 @@ function serializeLicitacao(row: LicitacaoListRow) {
 
   return {
     id: row.id,
+    fonte: row.fonte,
     id_pncp: row.id_pncp,
     titulo: row.titulo,
     objeto: row.objeto,

@@ -5,7 +5,7 @@ import { ptBR } from 'date-fns/locale';
 import { Archive, ArrowDown, ArrowUp, ArrowUpDown, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DEFAULT_DIRECTION, type OrderBy, type SortDirection } from '@/lib/filters';
-import type { Categoria, Licitacao } from '@/lib/types';
+import { NOME_FONTE, type Categoria, type Licitacao } from '@/lib/types';
 import { cn, formatBRL, truncate } from '@/lib/utils';
 
 interface Column {
@@ -186,6 +186,7 @@ function Row({
       </td>
       <td className="border-b border-slate-100 px-3 py-2 align-top text-slate-700">
         {licitacao.modalidade ?? '—'}
+        <div className="text-[10px] text-slate-400">{NOME_FONTE[licitacao.fonte] ?? licitacao.fonte}</div>
       </td>
       <td className="border-b border-slate-100 px-3 py-2 text-right align-top tabular-nums text-slate-900">
         {formatBRL(licitacao.valor_estimado)}

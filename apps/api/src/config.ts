@@ -10,7 +10,11 @@ const Env = z.object({
   DATABASE_URL: z.string().url(),
   PNCP_RATE_LIMIT_MS: z.coerce.number().int().nonnegative().default(1000),
   PNCP_MAX_PAGES_PER_KEYWORD: z.coerce.number().int().positive().default(20),
-  PNCP_USER_AGENT: z.string().default('licitacoes-ai/0.1.0'),
+  PNCP_USER_AGENT: z.string().default('licitacoes-ai/0.1.0'), // usado por todas as fontes
+  FONTES: z
+    .string()
+    .default('pncp,querido_diario,petronect,paradigma,gobuyer')
+    .transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean)),
   LOG_LEVEL: z.string().default('info'),
   HEURISTIC_VALOR_MINIMO: z.coerce.number().nonnegative().default(10000),
   GEMINI_API_KEY: z.string().optional(),

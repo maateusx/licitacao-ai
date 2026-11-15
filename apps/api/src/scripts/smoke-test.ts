@@ -11,10 +11,12 @@ import { runCollection } from '../pipeline/orchestrator.js';
  *   pnpm smoke                       # keyword "chatbot", 2 páginas, com classificador
  *   pnpm smoke chatbot 1             # keyword + maxPages
  *   pnpm smoke chatbot 1 --no-class  # pula a chamada ao Gemini (não gasta token)
+ *   pnpm smoke chatbot 1 --fonte=querido_diario  # só essa(s) fonte(s), separadas por vírgula
  */
 async function main() {
   const args = process.argv.slice(2);
   const skipClassification = args.includes('--no-class');
+  const fontes = args.find((a) => a.startsWith('--fonte='))?.slice('--fonte='.length).split(',');
   const positionals = args.filter((a) => !a.startsWith('--'));
   const keyword = positionals[0] ?? 'chatbot';
   const maxPagesPerKeyword = positionals[1] ? Number(positionals[1]) : 2;
@@ -30,6 +32,7 @@ async function main() {
     keywords: [keyword],
     maxPagesPerKeyword,
     skipClassification,
+    fontes,
   });
 
   const [licitacoesAfter, analisesAfter] = await Promise.all([
@@ -49,11 +52,12 @@ async function main() {
       licitacoes_no_banco: { antes: licitacoesBefore, depois: licitacoesAfter },
       analises_no_banco: { antes: analisesBefore, depois: analisesAfter },
       por_keyword: summary.por_keyword.map((k) => ({
+        fonte: k.fonte,
         keyword: k.keyword,
-        pages: k.pages,
         found: k.found,
         inserted: k.inserted,
         updated: k.updated,
+        erro: k.erro,
       })),
     },
     'smoke test done',

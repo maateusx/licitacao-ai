@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { api, ApiError } from '@/lib/api-client';
-import type { Categoria, Licitacao } from '@/lib/types';
+import { NOME_FONTE, type Categoria, type Licitacao } from '@/lib/types';
 import { cn, formatBRL } from '@/lib/utils';
 
 interface Props {
@@ -112,7 +112,8 @@ function DrawerBody({ licitacao }: { licitacao: Licitacao }) {
       <dl className="grid grid-cols-2 gap-3 text-xs">
         <Field label="Órgão" value={licitacao.orgao ?? '—'} />
         <Field label="Município" value={licitacao.municipio ?? '—'} />
-        <Field label="ID PNCP" value={licitacao.id_pncp} mono />
+        <Field label="Fonte" value={NOME_FONTE[licitacao.fonte] ?? licitacao.fonte} />
+        <Field label="ID" value={licitacao.id_pncp} mono />
         <DateField label="Publicação" iso={licitacao.data_publicacao} />
         <DateField label="Abertura" iso={licitacao.data_abertura} />
         <DateField label="Encerramento" iso={licitacao.data_encerramento} countdown />
@@ -222,7 +223,7 @@ function DrawerBody({ licitacao }: { licitacao: Licitacao }) {
             rel="noreferrer"
             className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-md border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 transition hover:bg-slate-50"
           >
-            Abrir no PNCP <ExternalLink className="h-3.5 w-3.5" />
+            Abrir no {NOME_FONTE[licitacao.fonte] ?? 'site de origem'} <ExternalLink className="h-3.5 w-3.5" />
           </a>
         )}
         <Button

@@ -1,30 +1,57 @@
-import { upsertLicitacao, type LicitacaoInput } from '../db/repositories/licitacoes.js';
-import type { PncpItem } from './pncp-client.js';
+import { z } from 'zod';
+import { HttpClient } from '../../lib/http.js';
+import { pickDate, pickNum, pickStr, type Fonte, type LicitacaoNormalizada } from './comum.js';
 
-export interface ProcessItemResult {
-  id: string;          // db uuid
-  id_pncp: string;
-  inserted: boolean;
-  input: LicitacaoInput;
-}
+const BASE_URL = 'https://pncp.gov.br/api/search/';
+const PAGE_SIZE = 100;
+
+// API shape varies; keep tolerant. We only care that items is an array.
+const PncpSearchResponseSchema = z
+  .object({
+    items: z.array(z.record(z.string(), z.unknown())).default([]),
+    total_paginas: z.number().optional(),
+    totalPaginas: z.number().optional(),
+  })
+  .passthrough();
+
+type PncpItem = Record<string, unknown>;
+
+const http = new HttpClient('PNCP');
+
+export const pncp: Fonte = {
+  nome: 'pncp',
+  async *buscar(keyword, maxPages) {
+    for (let pagina = 1; pagina <= maxPages; pagina++) {
+      const qs = new URLSearchParams({
+        q: keyword,
+        tipos_documento: 'edital',
+        ordenacao: '-data',
+        pagina: String(pagina),
+        tam_pagina: String(PAGE_SIZE),
+        status: 'recebendo_proposta',
+        tipos: '1|4',
+      });
+      const res = PncpSearchResponseSchema.parse(await http.getJson(`${BASE_URL}?${qs}`));
+      for (const item of res.items) {
+        const lic = mapPncpItem(item);
+        if (lic) yield lic;
+      }
+      const totalPaginas = res.total_paginas ?? res.totalPaginas;
+      if (res.items.length < PAGE_SIZE || (totalPaginas && pagina >= totalPaginas)) break;
+    }
+  },
+};
 
 /**
- * Maps a raw PNCP item to our schema and upserts. We don't know the exact
- * field shape across PNCP versions, so we accept the most common aliases
- * and fall back to null. The full raw object is stored verbatim so
- * mistakes here can be reprocessed later.
- *
- * Returns the upserted row id + the normalized input — callers downstream
- * (heuristic filter, classifier) need that without a second DB roundtrip.
+ * We don't know the exact field shape across PNCP versions, so we accept the
+ * most common aliases and fall back to null. The full raw object is stored
+ * verbatim so mistakes here can be reprocessed later.
  */
-export async function processItem(
-  item: PncpItem,
-  keyword: string,
-): Promise<ProcessItemResult | null> {
+export function mapPncpItem(item: PncpItem): LicitacaoNormalizada | null {
   const id_pncp = pickStr(item, ['numero_controle_pncp', 'numeroControlePNCP', 'id_pncp', 'id']);
   if (!id_pncp) return null;
 
-  const input: LicitacaoInput = {
+  return {
     id_pncp,
     titulo: pickStr(item, ['title', 'titulo', 'objeto_compra']),
     objeto: pickStr(item, ['description', 'descricao', 'objeto', 'objeto_compra']),
@@ -64,44 +91,8 @@ export async function processItem(
       'dataFimVigencia',
     ]),
     url_pncp: buildPncpUrl(item, id_pncp),
-    keyword,
     raw: item,
   };
-
-  const res = await upsertLicitacao(input);
-  return { id: res.id, id_pncp, inserted: res.inserted, input };
-}
-
-function pickStr(obj: PncpItem, keys: string[]): string | null {
-  for (const k of keys) {
-    const v = obj[k];
-    if (typeof v === 'string' && v.trim() !== '') return v;
-    if (typeof v === 'number') return String(v);
-  }
-  return null;
-}
-
-function pickNum(obj: PncpItem, keys: string[]): number | null {
-  for (const k of keys) {
-    const v = obj[k];
-    if (typeof v === 'number' && Number.isFinite(v)) return v;
-    if (typeof v === 'string' && v.trim() !== '') {
-      const n = Number(v);
-      if (Number.isFinite(n)) return n;
-    }
-  }
-  return null;
-}
-
-function pickDate(obj: PncpItem, keys: string[]): Date | null {
-  for (const k of keys) {
-    const v = obj[k];
-    if (typeof v === 'string' && v.trim() !== '') {
-      const d = new Date(v);
-      if (!Number.isNaN(d.getTime())) return d;
-    }
-  }
-  return null;
 }
 
 function buildPncpUrl(item: PncpItem, id_pncp: string): string {

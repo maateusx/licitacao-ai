@@ -4,7 +4,7 @@ Encontrar oportunidades relevantes em licitações públicas brasileiras é um t
 
 **Licitações AI** automatiza esse garimpo para o seu nicho — seja ele software, obras, equipamentos médicos ou qualquer outro — definido pelas palavras-chave que você cadastra e pelo perfil da sua empresa. É um pipeline que:
 
-1. **Monitora** o PNCP por palavras-chave (cron automático ou disparo manual);
+1. **Monitora** o PNCP, diários municipais (Querido Diário), Petronect e portais do Sistema S por palavras-chave (cron automático ou disparo manual);
 2. **Filtra** os resultados por heurísticas (valor mínimo, UF/órgão, regex de objeto);
 3. **Classifica** cada oportunidade restante usando o **Gemini**, avaliando se faz sentido para o perfil da sua empresa;
 4. **Exibe** tudo numa timeline web filtrável, com histórico de execuções e reanálise sob demanda.
@@ -15,7 +15,7 @@ Roda inteiramente local, com Postgres em Docker.
 
 ## Funcionalidades
 
-- 🔎 **Busca multi-keyword** no PNCP, paginada e com rate-limit (1 req/s).
+- 🔎 **Busca multi-keyword e multi-fonte**: PNCP, Querido Diário, Petronect, portais Paradigma e GoBuyer do Sistema S ([detalhes](./docs/pipeline.md#fase-1--coleta)).
 - 🧹 **Filtro heurístico** configurável sem rebuild ([`config/filtros.json`](./config/filtros.json)).
 - 🤖 **Classificação por IA** (Gemini) com validação de schema (Zod) e retry, usando o perfil da empresa como contexto ([`config/empresa-perfil.md`](./config/empresa-perfil.md)).
 - 📅 **Timeline filtrável** com estado sincronizado na URL.

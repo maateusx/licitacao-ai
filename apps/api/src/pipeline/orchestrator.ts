@@ -6,7 +6,7 @@ import { fetchKeyword, type FetchKeywordResult, type NewLicitacao } from './fetc
 import { GeminiClassifier } from './gemini-classifier.js';
 import { applyHeuristicFilter, type FilterReason } from './heuristic-filter.js';
 import { PROMPT_VERSION } from './prompts/classifier.v1.js';
-import { PncpClient } from './pncp-client.js';
+import { fontesAtivas } from './fontes/index.js';
 import { loadFiltros } from '../lib/filtros.js';
 import { loadEmpresaPerfil } from '../lib/empresa-perfil.js';
 
@@ -23,6 +23,7 @@ export interface RunSummary {
 
 export interface RunOptions {
   keywords?: string[]; // override; defaults to all active keywords
+  fontes?: string[]; // override; defaults to env FONTES
   maxPagesPerKeyword?: number;
   skipClassification?: boolean; // útil para smoke test sem custo
 }
@@ -42,7 +43,7 @@ export async function runCollection(opts: RunOptions = {}): Promise<RunSummary> 
   const execucao_id = execucao[0]!.id;
   logger.info({ execucao_id, keywords: keywords.length }, 'collection started');
 
-  const client = new PncpClient();
+  const fontes = fontesAtivas(opts.fontes);
   const por_keyword: FetchKeywordResult[] = [];
   let total_encontradas = 0;
   let total_novas = 0;
@@ -55,21 +56,28 @@ export async function runCollection(opts: RunOptions = {}): Promise<RunSummary> 
   const novasUnicas = new Map<string, NewLicitacao>();
 
   try {
-    for (const kw of keywords) {
-      const r = await fetchKeyword(client, kw.termo, {
-        maxPages: opts.maxPagesPerKeyword,
-      });
-      por_keyword.push(r);
-      total_encontradas += r.found;
-      total_novas += r.inserted;
-      for (const n of r.novas) {
-        if (!novasUnicas.has(n.id)) novasUnicas.set(n.id, n);
+    // ponytail: fontes em série; rodar em paralelo (cada uma tem seu rate-limit) se o run ficar lento.
+    for (const fonte of fontes) {
+      for (const kw of keywords) {
+        const r = await fetchKeyword(fonte, kw.termo, {
+          maxPages: opts.maxPagesPerKeyword,
+        });
+        por_keyword.push(r);
+        total_encontradas += r.found;
+        total_novas += r.inserted;
+        for (const n of r.novas) {
+          if (!novasUnicas.has(n.id)) novasUnicas.set(n.id, n);
+        }
+        logger.info(
+          { fonte: r.fonte, keyword: r.keyword, found: r.found, inserted: r.inserted, updated: r.updated, erro: r.erro },
+          'keyword done',
+        );
       }
-      logger.info(
-        { keyword: r.keyword, found: r.found, inserted: r.inserted, updated: r.updated, pages: r.pages },
-        'keyword done',
-      );
     }
+    // Falha de fonte não derruba o run; fica registrada em execucoes.erro.
+    const errosFonte = por_keyword
+      .filter((r) => r.erro)
+      .map((r) => `${r.fonte}/${r.keyword}: ${r.erro}`);
 
     if (opts.skipClassification) {
       logger.info({ novas: novasUnicas.size }, 'skipClassification=true — pulando filtro/classifier');
@@ -179,6 +187,7 @@ export async function runCollection(opts: RunOptions = {}): Promise<RunSummary> 
       UPDATE execucoes
       SET finished_at = now(),
           status = 'done',
+          erro = ${errosFonte.length ? errosFonte.join('\n').slice(0, 4000) : null},
           total_encontradas = ${total_encontradas},
           total_novas = ${total_novas},
           total_classificadas = ${total_classificadas},

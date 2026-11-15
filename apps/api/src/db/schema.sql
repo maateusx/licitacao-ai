@@ -26,8 +26,12 @@ CREATE TABLE IF NOT EXISTS licitacoes (
 -- ALTERs idempotentes para bancos que já tinham a tabela criada antes.
 ALTER TABLE licitacoes ADD COLUMN IF NOT EXISTS arquivada boolean NOT NULL DEFAULT false;
 ALTER TABLE licitacoes ADD COLUMN IF NOT EXISTS favorita  boolean NOT NULL DEFAULT false;
+-- Multi-fonte: id_pncp/url_pncp guardam id/link de qualquer fonte (nome histórico);
+-- ids de fontes != 'pncp' vêm prefixados com '<fonte>:'.
+ALTER TABLE licitacoes ADD COLUMN IF NOT EXISTS fonte text NOT NULL DEFAULT 'pncp';
 
 CREATE INDEX IF NOT EXISTS idx_licitacoes_encerramento ON licitacoes(data_encerramento);
+CREATE INDEX IF NOT EXISTS idx_licitacoes_fonte        ON licitacoes(fonte);
 CREATE INDEX IF NOT EXISTS idx_licitacoes_uf           ON licitacoes(uf);
 CREATE INDEX IF NOT EXISTS idx_licitacoes_status       ON licitacoes(status);
 CREATE INDEX IF NOT EXISTS idx_licitacoes_keywords     ON licitacoes USING gin(keywords_match);

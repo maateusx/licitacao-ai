@@ -4,7 +4,7 @@ import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { Archive, Sparkles, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { Licitacao } from '@/lib/types';
+import { NOME_FONTE, type Licitacao } from '@/lib/types';
 import { cn, formatBRL, truncate } from '@/lib/utils';
 
 interface Props {
@@ -25,6 +25,7 @@ export function LicitacaoCard({ licitacao, onClick }: Props) {
     objeto,
     orgao,
     uf,
+    fonte,
     valor_estimado,
     data_encerramento,
     analise,
@@ -69,7 +70,7 @@ export function LicitacaoCard({ licitacao, onClick }: Props) {
       </div>
 
       <div className="line-clamp-1 text-[10px] text-slate-500">
-        {orgao ?? 'órgão ?'} {uf ? `· ${uf}` : ''}
+        {orgao ?? 'órgão ?'} {uf ? `· ${uf}` : ''} · {NOME_FONTE[fonte] ?? fonte}
       </div>
 
       <div className="mt-auto flex items-center justify-between">

@@ -46,11 +46,23 @@ runCollection(opts)
 
 ## Fase 1 — Coleta
 
-- [`pncp-client.ts`](../apps/api/src/pipeline/pncp-client.ts) — cliente HTTP do PNCP (undici). Aplica rate-limit, User-Agent customizado e retry com backoff exponencial em erros 5xx/timeout.
-- [`fetcher.ts`](../apps/api/src/pipeline/fetcher.ts) → `fetchKeyword()` — pagina os resultados de uma keyword até a última página ou até o cap (`PNCP_MAX_PAGES_PER_KEYWORD`, default 20).
-- [`dedup.ts`](../apps/api/src/pipeline/dedup.ts) → `processItem()` — normaliza os campos do item do PNCP (lidando com variações de nome) e faz **upsert** por `id_pncp`:
+Cada fonte é um arquivo em [`fontes/`](../apps/api/src/pipeline/fontes/) que implementa `Fonte.buscar(keyword, maxPages)` e devolve licitações já normalizadas. Ligadas via env `FONTES` (todas por padrão):
+
+| `fonte` | Cobre | Como busca |
+|---|---|---|
+| `pncp` | Órgãos sob a Lei 14.133 (inclui parte do Sistema S e estatais que publicam lá) | Busca por keyword no servidor, paginada |
+| `querido_diario` | Diários oficiais municipais (1 registro por diário, trechos como objeto; sem valor/prazo) | Full-text no servidor, últimos 7 dias |
+| `petronect` | Petrobras, Transpetro, PBio (Lei 13.303, fora do PNCP; sem valor) | Lista tudo 1×/run, filtra keyword localmente |
+| `paradigma` | Portais Paradigma do Sistema S: SESI/SENAI BA, MG, MS, SC, RJ, CE; SESC RJ/BA/SP/PE/MS/ES; SENAC SP; SEBRAE BA; SEST SENAT | Lista os portais 1×/run, filtra keyword localmente; lista em `paradigma.ts` |
+| `gobuyer` | CNI, SESI-DN, SENAI-DN, IEL-NC | Cookie XSRF → ids → detalhes, 1×/run, filtra localmente |
+
+- [`lib/http.ts`](../apps/api/src/lib/http.ts) — cliente HTTP (undici) por fonte: rate-limit, User-Agent (`PNCP_USER_AGENT`) e retry com backoff em 5xx/timeout.
+- [`fetcher.ts`](../apps/api/src/pipeline/fetcher.ts) → `fetchKeyword(fonte, keyword)` — consome a fonte e faz **upsert** por `id_pncp` (ids de fontes ≠ `pncp` vêm prefixados, ex. `petronect:7004687604`):
   - novo → `INSERT`;
   - existente → `UPDATE` em `updated_at`, merge de `keywords_match` e `status`.
+- Falha de uma fonte não derruba o run: o erro vai para `execucoes.erro` e o que já foi gravado segue pro classificador.
+- Fontes que listam tudo casam a keyword como palavra inteira, sem acento/caixa (`casaKeyword`): "IA" não casa com "materiais".
+- `pnpm --filter @licitacoes/api fonte:test [fonte] [keyword]` testa mapeadores offline e, opcionalmente, uma busca real sem banco.
 
 A resposta crua da API é guardada em `licitacoes.raw` (jsonb) para permitir reprocessamento.
 

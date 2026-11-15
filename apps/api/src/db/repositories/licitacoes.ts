@@ -1,6 +1,7 @@
 import { sql } from '../client.js';
 
 export interface LicitacaoInput {
+  fonte: string;
   id_pncp: string;
   titulo: string | null;
   objeto: string | null;
@@ -31,11 +32,11 @@ export interface UpsertResult {
 export async function upsertLicitacao(input: LicitacaoInput): Promise<UpsertResult> {
   const rows = await sql<{ id: string; inserted: boolean }[]>`
     INSERT INTO licitacoes (
-      id_pncp, titulo, objeto, orgao, uf, municipio, modalidade,
+      fonte, id_pncp, titulo, objeto, orgao, uf, municipio, modalidade,
       valor_estimado, status, data_publicacao, data_abertura,
       data_encerramento, url_pncp, raw, keywords_match
     ) VALUES (
-      ${input.id_pncp}, ${input.titulo}, ${input.objeto}, ${input.orgao},
+      ${input.fonte}, ${input.id_pncp}, ${input.titulo}, ${input.objeto}, ${input.orgao},
       ${input.uf}, ${input.municipio}, ${input.modalidade},
       ${input.valor_estimado}, ${input.status},
       ${input.data_publicacao}, ${input.data_abertura}, ${input.data_encerramento},
@@ -98,6 +99,7 @@ export interface ListFilters {
 
 export interface LicitacaoListRow {
   id: string;
+  fonte: string;
   id_pncp: string;
   titulo: string | null;
   objeto: string | null;
@@ -228,7 +230,7 @@ export async function listLicitacoes(filters: ListFilters): Promise<ListResult> 
 
   const data = await sql<LicitacaoListRow[]>`
     SELECT
-      l.id, l.id_pncp, l.titulo, l.objeto, l.orgao, l.uf, l.municipio,
+      l.id, l.fonte, l.id_pncp, l.titulo, l.objeto, l.orgao, l.uf, l.municipio,
       l.modalidade, l.valor_estimado, l.status,
       l.data_publicacao, l.data_abertura, l.data_encerramento, l.url_pncp,
       l.keywords_match, l.arquivada, l.favorita, l.created_at, l.updated_at,
@@ -293,7 +295,7 @@ export async function listLicitacoes(filters: ListFilters): Promise<ListResult> 
 export async function getLicitacaoById(id: string): Promise<LicitacaoListRow | null> {
   const rows = await sql<LicitacaoListRow[]>`
     SELECT
-      l.id, l.id_pncp, l.titulo, l.objeto, l.orgao, l.uf, l.municipio,
+      l.id, l.fonte, l.id_pncp, l.titulo, l.objeto, l.orgao, l.uf, l.municipio,
       l.modalidade, l.valor_estimado, l.status,
       l.data_publicacao, l.data_abertura, l.data_encerramento, l.url_pncp,
       l.keywords_match, l.arquivada, l.favorita, l.created_at, l.updated_at,
